@@ -145,7 +145,6 @@ document.addEventListener('DOMContentLoaded', event => {
 				this.server = server;
 			}
 		}
-		
 	});
 
 	Vue.component('message', {
