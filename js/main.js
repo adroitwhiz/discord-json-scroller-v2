@@ -1,16 +1,3 @@
-const elemIds = {
-	'messageRenderRangeMin':'msg-range-min',
-	'messageRenderRangeMax':'msg-range-max',
-	'messageJumpNumber':'msg-num',
-	'messageJumpContext':'msg-context',
-	'findFilterTextCheckbox':'find-filter-by-text',
-	'findFilterText':'find-filter-text',
-	'findFilterUsernameCheckbox':'find-filter-by-username',
-	'findFilterUsername':'find-filter-username',
-	'findButton':'find-btn',
-	'JSONFilePicker':'json-file-picker'
-};
-
 const readJSONFromFile = file => {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -34,7 +21,13 @@ document.addEventListener('DOMContentLoaded', event => {
 		data:{
 			server: {channels: [], members: []},
 			messages: [],
-			activeChannelId: null
+			activeChannelId: null,
+			navigationData: {
+				renderRangeMin: 1,
+				renderRangeMax: 10,
+				messageJumpId: '',
+				messageJumpContextAmount: 1,
+			}
 		},
 		methods: {
 			setChannel (channelId) {
@@ -55,12 +48,15 @@ document.addEventListener('DOMContentLoaded', event => {
 			},
 			renderMessages () {
 				const currentChannel = this.server.channels[this.activeChannelId];
-				const messagesToRender = currentChannel.messages.slice(parseInt(elems.messageRenderRangeMin.value), parseInt(elems.messageRenderRangeMax.value));
+				const messagesToRender = currentChannel.messages.slice(
+					parseInt(this.navigationData.renderRangeMin),
+					parseInt(this.navigationData.renderRangeMax + 1)
+				);
 
 				this.displayMessages(messagesToRender);
 			},
 			jumpMessages () {
-				const jumpID = elems.messageJumpNumber.value;
+				const jumpID = this.navigationData.messageJumpId;
 
 				let messageIndex;
 				let messageChannel;
@@ -74,7 +70,7 @@ document.addEventListener('DOMContentLoaded', event => {
 		
 				if (messageIndex === -1) return;
 		
-				let messageJumpContext = parseInt(elems.messageJumpContext.value);
+				let messageJumpContext = this.navigationData.messageJumpContextAmount;
 				let messagesToRender = messageChannel.messages.slice(Math.max(0, messageIndex-messageJumpContext), messageIndex+messageJumpContext+1);
 		
 				this.setChannel(messageChannel.id);
@@ -118,15 +114,5 @@ document.addEventListener('DOMContentLoaded', event => {
 		},
 		template: '#message-template'
 	});
-
-	// Bind elements to IDs
-	const elems = {};
-	for (let i in elemIds) {
-		if (elemIds.hasOwnProperty(i)) {
-			let elem = document.getElementById(elemIds[i]);
-			if (elem === null) throw new Error(`Could not find element with ID ${elemIds[i]}`);
-			elems[i] = elem;
-		}
-	}
 });
 
