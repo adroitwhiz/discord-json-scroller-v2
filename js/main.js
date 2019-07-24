@@ -16,7 +16,7 @@ const elemIds = {
 let server = null;
 let activeChannel = null;
 
-const loadServerFromFile = file => {
+const readJSONFromFile = file => {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
 		reader.addEventListener('load', event => {
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', event => {
 	elems.JSONFilePicker.addEventListener('change', event => {
 		const jsonFile = event.target.files[0];
 		if (jsonFile) {
-			loadServerFromFile(jsonFile).then(reinit);
+			readJSONFromFile(jsonFile).then(reinit);
 		}
 	});
 	
@@ -101,14 +101,17 @@ document.addEventListener('DOMContentLoaded', event => {
 });
 
 function reinit(serializedServer) {
+	console.log(serializedServer);
 	const channels = {};
 	for (const channel of serializedServer.channels) {
+		// Messages are read-only. Freezing them stops Vue from trying to "observe" every single message in every single channel.
+		Object.freeze(channel.messages);
 		channels[channel.id] = channel;
 	}
 
 	const members = {};
 	for (const member of serializedServer.members) {
-		members[member.id] = member;
+		members[member.user.id] = member.user;
 	}
 
 	server = {
