@@ -31,7 +31,7 @@ body {
 	border-left: var(--border-style);
 }
 
-#navigation {
+#navigation, #find-controls {
 	border-bottom: var(--border-style);
 }
 
