@@ -1,5 +1,4 @@
 const elemIds = {
-	'messageArea':'messages',
 	'renderButton':'render-btn',
 	'messageRenderRangeMin':'msg-range-min',
 	'messageRenderRangeMax':'msg-range-max',
@@ -11,7 +10,6 @@ const elemIds = {
 	'findFilterUsernameCheckbox':'find-filter-by-username',
 	'findFilterUsername':'find-filter-username',
 	'findButton':'find-btn',
-	'messageTemplate':'message-template',
 	'JSONFilePicker':'json-file-picker'
 };
 const elems = {};
@@ -27,10 +25,16 @@ const loadServerFromFile = file => {
 		reader.addEventListener('load', event => {
 			resolve(JSON.parse(event.target.result));
 		});
-		
+
 		reader.readAsText(file);
 	});
 }
+
+// Convert URLs into clickable links via Linkify.
+const vueLinkify = (element, binding) => {
+	element = linkifyElement(element, binding.value);
+}
+Vue.directive('linkified', vueLinkify);
 
 document.addEventListener('DOMContentLoaded', event => {
 	const channelList = new Vue({
@@ -46,7 +50,23 @@ document.addEventListener('DOMContentLoaded', event => {
 		}
 	});
 
+	Vue.component('message', {
+		props: ['message'],
+		data: () => {
+			return {}
+		},
+		template: '#message-template'
+	});
+
+	const messageList = new Vue({
+		el: '#messages',
+		data: {
+			messages: []
+		}
+	})
+
 	window.channelList = channelList;
+	window.messageList = messageList;
 
 	// Bind elements to IDs
 	for (let i in elemIds) {
@@ -57,8 +77,6 @@ document.addEventListener('DOMContentLoaded', event => {
 		}
 	}
 	
-	window.messageTemplate = Handlebars.compile(elems.messageTemplate.innerText);
-	
 	elems.JSONFilePicker.addEventListener('change', event => {
 		const jsonFile = event.target.files[0];
 		if (jsonFile) {
@@ -68,22 +86,20 @@ document.addEventListener('DOMContentLoaded', event => {
 	
 	elems.renderButton.addEventListener('click', event => {
 		let messagesToRender = activeChannel.messages.slice(parseInt(elems.messageRenderRangeMin.value), parseInt(elems.messageRenderRangeMax.value));
-		
-		renderMessages(messagesToRender, messageTemplate, elems.messageArea);
+
+		renderMessages(messagesToRender);
 	});
 	
 	elems.jumpButton.addEventListener('click', event => {
 		let jumpID = elems.messageJumpNumber.value;
-		
+
 		let messageToJumpTo = activeChannel.messages.findIndex(message => message.id === jumpID);
 		let messageJumpContext = parseInt(elems.messageJumpContext.value);
-		
+
 		let messagesToRender = activeChannel.messages.slice(Math.max(0, messageToJumpTo-messageJumpContext), messageToJumpTo+messageJumpContext+1);
-		
-		renderMessages(messagesToRender, elems.messageArea);
+
+		renderMessages(messagesToRender);
 	});
-	
-	//elems.findButton
 });
 
 function reinit(server) {
@@ -91,7 +107,7 @@ function reinit(server) {
 	loadedUsers = {};
 	for (let i = 0; i < loadedServer.members.length; i++) {
 		let user = loadedServer.members[i].user;
-		
+
 		loadedUsers[user.id] = user;
 	}
 
@@ -103,30 +119,15 @@ function setActiveChannel(channelId) {
 	channelList.activeChannelId = channelId;
 }
 
-function renderMessages(messages, messageArea) {
-	const renderedMessages = [];
-	
-	for (let i = 0, len = messages.length; i < len; i++) {
-		renderedMessages.push(renderMessage(messageTemplate, messages[i]));
-	}
-	
-	renderedMessages.reverse();
-	
-	messageArea.innerHTML = renderedMessages.join('');
-	
-	Array.from(messageArea.getElementsByClassName('message-text')).forEach(messageText => {
-		linkifyElement(messageText);
+function renderMessages(messages) {
+	messageList.messages = messages.reverse().map(message => {
+		return {
+			text:message.content,
+			attachments:message.attachments,
+			username:loadedUsers[message.author] ? loadedUsers[message.author].username : `<@${message.author}>`,
+			timestamp:moment(parseInt(message.createdTimestamp)).format('MMM D Y h:mm:ss A'),
+			isEdited:message.editedTimestamp !== null,
+			index:message.id
+		}
 	});
 }
-
-function renderMessage(template, message) {
-	return template({
-		text:message.content,
-		attachments:message.attachments,
-		username:loadedUsers[message.author] ? loadedUsers[message.author].username : `<@${message.author}>`,
-		timestamp:moment(parseInt(message.createdTimestamp)).format('MMM D Y h:mm:ss A'),
-		isEdited:message.editedTimestamp !== null,
-		index:message.id
-	});
-}
-

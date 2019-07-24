@@ -13,7 +13,6 @@
 	
 	<script src="js/linkify.min.js"></script>
 	<script src="js/linkify-element.min.js"></script>
-	<script src="js/handlebars-v4.0.5.js"></script>
 	<script src="js/moment.js"></script>
 	<script src="js/vue.js"></script>
 	<script src="js/main.js"></script>
@@ -54,11 +53,13 @@
 			</div>
 			
 			<div class="messages-container">
-				<div id="messages"></div>
+				<div id="messages">
+					<message v-for="message in messages" v-bind:message="message" v-bind:key="message.id"></message>
+				</div>
 			</div>
 		</div>
 		
-		<div class="flex-col" style="display:none">
+		<div class="flex-col">
 			<div id="find-controls" class="flex-row">
 				<div>
 					<input type="checkbox" id="find-filter-by-text">
@@ -87,23 +88,19 @@
 			<input type="file" id="json-file-picker">
 		</div>
 	</div>
-	
-	<script id="message-template" type="text/x-handlebars-template">
+
+	<script id="message-template" type="text/x-template">
 		<div class="message">
 			<div class="message-data">
-				<div class="username">{{username}}</div>
-				<div class="timestamp">{{timestamp}}</div>
-				<div class="index">{{index}}</div>
+				<div class="username">{{message.username}}</div>
+				<div class="timestamp">{{message.timestamp}}</div>
+				<div class="index">{{message.index}}</div>
 			</div>
 			<div class="message-content">
-				<div class="message-text">{{text}}</div>
-				{{#if attachments}}
-					<div class="message-attachments">
-						{{#each attachments}}
-							<img src="{{this.url}}" class="attachment" />
-						{{/each}}
-					</div>
-				{{/if}}
+				<div class="message-text" v-linkified>{{message.text}}</div>
+				<div class="message-attachments" v-if="message.attachments">
+					<img :src="attachment.url" class="attachment" v-for="attachment in message.attachments" />
+				</div>
 			</div>
 		</div>
 	</script>
