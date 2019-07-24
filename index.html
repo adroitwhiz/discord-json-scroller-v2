@@ -5,7 +5,8 @@
 	<title>Discord JSON Browser</title>
 	
 	<link rel="stylesheet" type="text/css" href="css/normalize.css">
-	<link rel="stylesheet" type="text/css" href="css/page.css">
+	<link rel="stylesheet" type="text/css" href="css/page-layout.css">
+	<link rel="stylesheet" type="text/css" href="css/page-theme.css">
 	<link rel="stylesheet" type="text/css" href="css/messages-layout.css">
 	<link rel="stylesheet" type="text/css" href="css/messages-theme.css">
 	<link rel="stylesheet" type="text/css" href="css/channels.css">
@@ -14,6 +15,7 @@
 	<script src="js/linkify-element.min.js"></script>
 	<script src="js/handlebars-v4.0.5.js"></script>
 	<script src="js/moment.js"></script>
+	<script src="js/vue.js"></script>
 	<script src="js/main.js"></script>
 </head>
 <body>
@@ -23,6 +25,13 @@
 				Channels:
 			</p>
 			<ul id="channel-list">
+				<li
+					v-bind:class="{channel: true, selected: activeChannelId === channel.id}"
+					v-on:click="setChannel(channel.id)"
+					v-for="channel in channels"
+				>
+					<span class="channel-name">{{channel.name}}</span>
+				</li>
 			</ul>
 		</div>
 		<div class="flex-expand flex-col">
@@ -97,12 +106,6 @@
 				{{/if}}
 			</div>
 		</div>
-	</script>
-	
-	<script id="channel-template" type="text/x-handlebars-template">
-		<li class="channel">
-			<span class="channel-name">{{channelName}}</span>
-		</li>
 	</script>
 </body>
 </html>
