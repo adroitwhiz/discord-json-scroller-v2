@@ -91,11 +91,22 @@ document.addEventListener('DOMContentLoaded', event => {
 	elems.jumpButton.addEventListener('click', event => {
 		let jumpID = elems.messageJumpNumber.value;
 
-		let messageToJumpTo = activeChannel.messages.findIndex(message => message.id === jumpID);
+		let messageIndex;
+		let messageChannel;
+		for (const channel of Object.values(server.channels)) {
+			messageIndex = channel.messages.findIndex(message => message.id === jumpID);
+			if (messageIndex !== -1) {
+				messageChannel = channel;
+				break;
+			}
+		}
+
+		if (messageIndex === -1) return;
+
 		let messageJumpContext = parseInt(elems.messageJumpContext.value);
+		let messagesToRender = messageChannel.messages.slice(Math.max(0, messageIndex-messageJumpContext), messageIndex+messageJumpContext+1);
 
-		let messagesToRender = activeChannel.messages.slice(Math.max(0, messageToJumpTo-messageJumpContext), messageToJumpTo+messageJumpContext+1);
-
+		setActiveChannel(messageChannel.id);
 		renderMessages(messagesToRender);
 	});
 });
