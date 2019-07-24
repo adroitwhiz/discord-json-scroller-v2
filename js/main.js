@@ -1,10 +1,8 @@
 const elemIds = {
-	'renderButton':'render-btn',
 	'messageRenderRangeMin':'msg-range-min',
 	'messageRenderRangeMax':'msg-range-max',
 	'messageJumpNumber':'msg-num',
 	'messageJumpContext':'msg-context',
-	'jumpButton':'jump-btn',
 	'findFilterTextCheckbox':'find-filter-by-text',
 	'findFilterText':'find-filter-text',
 	'findFilterUsernameCheckbox':'find-filter-by-username',
@@ -12,9 +10,6 @@ const elemIds = {
 	'findButton':'find-btn',
 	'JSONFilePicker':'json-file-picker'
 };
-
-let server = null;
-let activeChannel = null;
 
 const readJSONFromFile = file => {
 	return new Promise((resolve, reject) => {
@@ -34,17 +29,86 @@ const vueLinkify = (element, binding) => {
 Vue.directive('linkified', vueLinkify);
 
 document.addEventListener('DOMContentLoaded', event => {
-	const channelList = new Vue({
-		el: '#channel-list',
-		data: {
-			channels: [],
+	const app = new Vue({
+		el:'#app',
+		data:{
+			server: {channels: [], members: []},
+			messages: [],
 			activeChannelId: null
 		},
 		methods: {
-			setChannel: channelId => {
-				setActiveChannel(channelId)
+			setChannel (channelId) {
+				activeChannel = this.server.channels[channelId];
+				this.activeChannelId = channelId;
+			},
+			displayMessages (messages) {
+				this.messages = messages.reverse().map(message => {
+					return {
+						text:message.content,
+						attachments:message.attachments,
+						username:this.server.members.hasOwnProperty(message.author) ? this.server.members[message.author].username : `<@${message.author}>`,
+						timestamp:moment(parseInt(message.createdTimestamp)).format('MMM D Y h:mm:ss A'),
+						isEdited:message.editedTimestamp !== null,
+						index:message.id
+					}
+				});
+			},
+			renderMessages () {
+				const currentChannel = this.server.channels[this.activeChannelId];
+				const messagesToRender = currentChannel.messages.slice(parseInt(elems.messageRenderRangeMin.value), parseInt(elems.messageRenderRangeMax.value));
+
+				this.displayMessages(messagesToRender);
+			},
+			jumpMessages () {
+				const jumpID = elems.messageJumpNumber.value;
+
+				let messageIndex;
+				let messageChannel;
+				for (const channel of Object.values(this.server.channels)) {
+					messageIndex = channel.messages.findIndex(message => message.id === jumpID);
+					if (messageIndex !== -1) {
+						messageChannel = channel;
+						break;
+					}
+				}
+		
+				if (messageIndex === -1) return;
+		
+				let messageJumpContext = parseInt(elems.messageJumpContext.value);
+				let messagesToRender = messageChannel.messages.slice(Math.max(0, messageIndex-messageJumpContext), messageIndex+messageJumpContext+1);
+		
+				this.setChannel(messageChannel.id);
+				this.displayMessages(messagesToRender);
+			},
+			loadJSONFromFile (event) {
+				console.log(event);
+				const jsonFile = event.target.files[0];
+				if (jsonFile) {
+					readJSONFromFile(jsonFile).then(this.loadServer);
+				}
+			},
+			loadServer (serializedServer) {
+				const channels = {};
+				for (const channel of serializedServer.channels) {
+					// Messages are read-only. Freezing them stops Vue from trying to "observe" every single message in every single channel.
+					Object.freeze(channel.messages);
+					channels[channel.id] = channel;
+				}
+			
+				const members = {};
+				for (const member of serializedServer.members) {
+					members[member.user.id] = member.user;
+				}
+			
+				const server = {
+					channels: channels,
+					members: members
+				};
+			
+				this.server = server;
 			}
 		}
+		
 	});
 
 	Vue.component('message', {
@@ -55,16 +119,6 @@ document.addEventListener('DOMContentLoaded', event => {
 		template: '#message-template'
 	});
 
-	const messageList = new Vue({
-		el: '#messages',
-		data: {
-			messages: []
-		}
-	})
-
-	window.channelList = channelList;
-	window.messageList = messageList;
-
 	// Bind elements to IDs
 	const elems = {};
 	for (let i in elemIds) {
@@ -74,79 +128,5 @@ document.addEventListener('DOMContentLoaded', event => {
 			elems[i] = elem;
 		}
 	}
-	
-	elems.JSONFilePicker.addEventListener('change', event => {
-		const jsonFile = event.target.files[0];
-		if (jsonFile) {
-			readJSONFromFile(jsonFile).then(reinit);
-		}
-	});
-	
-	elems.renderButton.addEventListener('click', event => {
-		let messagesToRender = activeChannel.messages.slice(parseInt(elems.messageRenderRangeMin.value), parseInt(elems.messageRenderRangeMax.value));
-
-		renderMessages(messagesToRender);
-	});
-	
-	elems.jumpButton.addEventListener('click', event => {
-		let jumpID = elems.messageJumpNumber.value;
-
-		let messageIndex;
-		let messageChannel;
-		for (const channel of Object.values(server.channels)) {
-			messageIndex = channel.messages.findIndex(message => message.id === jumpID);
-			if (messageIndex !== -1) {
-				messageChannel = channel;
-				break;
-			}
-		}
-
-		if (messageIndex === -1) return;
-
-		let messageJumpContext = parseInt(elems.messageJumpContext.value);
-		let messagesToRender = messageChannel.messages.slice(Math.max(0, messageIndex-messageJumpContext), messageIndex+messageJumpContext+1);
-
-		setActiveChannel(messageChannel.id);
-		renderMessages(messagesToRender);
-	});
 });
 
-function reinit(serializedServer) {
-	console.log(serializedServer);
-	const channels = {};
-	for (const channel of serializedServer.channels) {
-		// Messages are read-only. Freezing them stops Vue from trying to "observe" every single message in every single channel.
-		Object.freeze(channel.messages);
-		channels[channel.id] = channel;
-	}
-
-	const members = {};
-	for (const member of serializedServer.members) {
-		members[member.user.id] = member.user;
-	}
-
-	server = {
-		channels: channels,
-		members: members
-	};
-
-	channelList.channels = server.channels;
-}
-
-function setActiveChannel(channelId) {
-	activeChannel = server.channels[channelId];
-	channelList.activeChannelId = channelId;
-}
-
-function renderMessages(messages) {
-	messageList.messages = messages.reverse().map(message => {
-		return {
-			text:message.content,
-			attachments:message.attachments,
-			username:server.members.hasOwnProperty(message.author) ? server.members[message.author].username : `<@${message.author}>`,
-			timestamp:moment(parseInt(message.createdTimestamp)).format('MMM D Y h:mm:ss A'),
-			isEdited:message.editedTimestamp !== null,
-			index:message.id
-		}
-	});
-}
