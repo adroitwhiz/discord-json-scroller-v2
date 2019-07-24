@@ -34,3 +34,10 @@ body {
 #navigation {
 	border-bottom: var(--border-style);
 }
+
+#find-toggle {
+	background-color: white;
+	border-bottom-left-radius: 0.5em;
+	border-bottom: var(--border-style);
+	border-left: var(--border-style);
+}

@@ -10,6 +10,7 @@
 	<link rel="stylesheet" type="text/css" href="css/messages-layout.css">
 	<link rel="stylesheet" type="text/css" href="css/messages-theme.css">
 	<link rel="stylesheet" type="text/css" href="css/channels.css">
+	<link rel="stylesheet" type="text/css" href="css/find-panel.css">
 	
 	<script src="js/vendor/linkify.js"></script>
 	<script src="js/vendor/linkify-element.js"></script>
@@ -64,26 +65,37 @@
 				</div>
 			</div>
 			
-			<div class="flex-col" id="find-panel">
+			<div v-bind:class="{'flex-col': true, collapsed: !findPanelVisible}" id="find-panel">
 				<div id="find-controls" class="flex-row">
 					<div>
-						<input type="checkbox" id="find-filter-by-text">
+						<input type="checkbox" v-model="searchFilterData.filterByText">
 						<span>Contains text:</span>
-						<input type="text" id="find-filter-text">
+						<input type="text" v-model="searchFilterData.textFilter">
 					</div>
 					<div>
-						<input type="checkbox" id="find-filter-by-username">
-						<span>From user:</span>
-						<input type="text" id="find-filter-username">
+						<input type="checkbox" v-model="searchFilterData.filterByUser">
+						<span>From user (name or ID):</span>
+						<input type="text" v-model="searchFilterData.userFilter">
 					</div>
 					<div>
-						<button id="find-btn">Find</button>
+							<input type="checkbox" v-model="searchFilterData.filterByChannel">
+							<span>From channel:</span>
+							<select v-model="searchFilterData.channelFilter">
+								<option v-for="channel in server.channels" v-bind:value="channel.id">
+									{{channel.name}}
+								</option>
+							</select>
+						</div>
+					<div>
+						<button v-on:click="searchMessages">Find</button>
 					</div>
 				</div>
 				<div class="messages-container">
 					<div id="found-messages">
+						<message v-for="message in foundMessages" v-bind:message="message" v-bind:key="message.id"></message>
 					</div>
 				</div>
+				<div id="find-toggle" v-on:click="findPanelVisible = !findPanelVisible">🔍</div>
 			</div>
 		</div>
 		

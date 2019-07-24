@@ -21,21 +21,31 @@ document.addEventListener('DOMContentLoaded', event => {
 		data:{
 			server: {channels: [], members: []},
 			messages: [],
+			foundMessages: [],
 			activeChannelId: null,
 			navigationData: {
 				renderRangeMin: 1,
 				renderRangeMax: 10,
 				messageJumpId: '',
 				messageJumpContextAmount: 1,
-			}
+			},
+			searchFilterData: {
+				filterByText: false,
+				filterByUser: false,
+				filterByChannel: false,
+				textFilter: '',
+				userFilter: '',
+				channelFilter: ''
+			},
+			findPanelVisible: false
 		},
 		methods: {
 			setChannel (channelId) {
 				activeChannel = this.server.channels[channelId];
 				this.activeChannelId = channelId;
 			},
-			displayMessages (messages) {
-				formattedMessages = messages.reverse().map(message => {
+			formatMessages (messages) {
+				return messages.reverse().map(message => {
 					return {
 						text:message.content,
 						attachments:message.attachments,
@@ -45,6 +55,9 @@ document.addEventListener('DOMContentLoaded', event => {
 						index:message.id
 					}
 				});
+			},
+			displayMessages (messages) {
+				formattedMessages = this.formatMessages(messages);
 				Object.freeze(formattedMessages);
 				this.messages = formattedMessages;
 			},
@@ -77,6 +90,32 @@ document.addEventListener('DOMContentLoaded', event => {
 
 				this.setChannel(messageChannel.id);
 				this.displayMessages(messagesToRender);
+			},
+			searchMessages () {
+				const MAX_MESSAGES = 10000;
+				let allMessages = [];
+				for (const channel of Object.values(this.server.channels)) {
+					if (this.searchFilterData.filterByChannel && this.searchFilterData.channelFilter !== channel.id) continue;
+					let messages = channel.messages;
+
+					if (this.searchFilterData.filterByText) {
+						const matchText = this.searchFilterData.textFilter.toLowerCase();
+						messages = messages.filter(message => message.content.toLowerCase().includes(matchText));
+					}
+	
+					if (this.searchFilterData.filterByUser) {
+						messages = messages.filter(message => message.author === userFilter || this.server.members[message.author].username === userFilter);
+					}
+
+					allMessages = allMessages.concat(messages);
+				}
+				
+				if (allMessages.length > MAX_MESSAGES) {
+					alert(`More than ${MAX_MESSAGES} messages found. Not displaying results.`);
+					return;
+				}
+
+				this.foundMessages = this.formatMessages(allMessages).sort((a, b) => a.timestamp - b.timestamp);
 			},
 			loadJSONFromFile (event) {
 				console.log(event);
