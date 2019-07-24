@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', event => {
 				this.activeChannelId = channelId;
 			},
 			displayMessages (messages) {
-				this.messages = messages.reverse().map(message => {
+				formattedMessages = messages.reverse().map(message => {
 					return {
 						text:message.content,
 						attachments:message.attachments,
@@ -45,6 +45,8 @@ document.addEventListener('DOMContentLoaded', event => {
 						index:message.id
 					}
 				});
+				Object.freeze(formattedMessages);
+				this.messages = formattedMessages;
 			},
 			renderMessages () {
 				const currentChannel = this.server.channels[this.activeChannelId];
@@ -72,7 +74,7 @@ document.addEventListener('DOMContentLoaded', event => {
 		
 				let messageJumpContext = this.navigationData.messageJumpContextAmount;
 				let messagesToRender = messageChannel.messages.slice(Math.max(0, messageIndex-messageJumpContext), messageIndex+messageJumpContext+1);
-		
+
 				this.setChannel(messageChannel.id);
 				this.displayMessages(messagesToRender);
 			},
