@@ -12,11 +12,8 @@ const elemIds = {
 	'findButton':'find-btn',
 	'JSONFilePicker':'json-file-picker'
 };
-const elems = {};
 
-let loadedServer = null;
-let loadedUsers = null;
-
+let server = null;
 let activeChannel = null;
 
 const loadServerFromFile = file => {
@@ -69,6 +66,7 @@ document.addEventListener('DOMContentLoaded', event => {
 	window.messageList = messageList;
 
 	// Bind elements to IDs
+	const elems = {};
 	for (let i in elemIds) {
 		if (elemIds.hasOwnProperty(i)) {
 			let elem = document.getElementById(elemIds[i]);
@@ -102,20 +100,27 @@ document.addEventListener('DOMContentLoaded', event => {
 	});
 });
 
-function reinit(server) {
-	loadedServer = server;
-	loadedUsers = {};
-	for (let i = 0; i < loadedServer.members.length; i++) {
-		let user = loadedServer.members[i].user;
-
-		loadedUsers[user.id] = user;
+function reinit(serializedServer) {
+	const channels = {};
+	for (const channel of serializedServer.channels) {
+		channels[channel.id] = channel;
 	}
 
-	channelList.channels = loadedServer.channels;
+	const members = {};
+	for (const member of serializedServer.members) {
+		members[member.id] = member;
+	}
+
+	server = {
+		channels: channels,
+		members: members
+	};
+
+	channelList.channels = server.channels;
 }
 
 function setActiveChannel(channelId) {
-	activeChannel = loadedServer.channels.find(channel => channel.id === channelId);
+	activeChannel = server.channels[channelId];
 	channelList.activeChannelId = channelId;
 }
 
@@ -124,7 +129,7 @@ function renderMessages(messages) {
 		return {
 			text:message.content,
 			attachments:message.attachments,
-			username:loadedUsers[message.author] ? loadedUsers[message.author].username : `<@${message.author}>`,
+			username:server.members.hasOwnProperty(message.author) ? server.members[message.author].username : `<@${message.author}>`,
 			timestamp:moment(parseInt(message.createdTimestamp)).format('MMM D Y h:mm:ss A'),
 			isEdited:message.editedTimestamp !== null,
 			index:message.id
