@@ -60,7 +60,7 @@
 				
 				<div class="messages-container">
 					<div id="messages">
-						<message v-for="message in messages" v-bind:message="message" v-bind:key="message.id"></message>
+						<message v-for="message in messages" v-bind:message="message" v-bind:key="message.index"></message>
 					</div>
 				</div>
 			</div>
@@ -92,7 +92,7 @@
 				</div>
 				<div class="messages-container">
 					<div id="found-messages">
-						<message v-for="message in foundMessages" v-bind:message="message" v-bind:key="message.id"></message>
+						<message v-for="message in foundMessages" v-bind:message="message" v-bind:key="message.index"></message>
 					</div>
 				</div>
 				<div id="find-toggle" v-on:click="findPanelVisible = !findPanelVisible">🔍</div>
