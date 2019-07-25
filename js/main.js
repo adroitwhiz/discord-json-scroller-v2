@@ -118,7 +118,6 @@ document.addEventListener('DOMContentLoaded', event => {
 				this.foundMessages = this.formatMessages(allMessages).sort((a, b) => a.timestamp - b.timestamp);
 			},
 			loadJSONFromFile (event) {
-				console.log(event);
 				const jsonFile = event.target.files[0];
 				if (jsonFile) {
 					readJSONFromFile(jsonFile).then(this.loadServer);
