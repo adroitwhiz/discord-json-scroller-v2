@@ -130,17 +130,17 @@ document.addEventListener('DOMContentLoaded', event => {
 					Object.freeze(channel.messages);
 					channels[channel.id] = channel;
 				}
-			
+
 				const members = {};
 				for (const member of serializedServer.members) {
 					members[member.user.id] = member.user;
 				}
-			
+
 				const server = {
 					channels: channels,
 					members: members
 				};
-			
+
 				this.server = server;
 			}
 		}
