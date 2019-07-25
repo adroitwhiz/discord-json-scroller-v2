@@ -109,7 +109,7 @@ document.addEventListener('DOMContentLoaded', event => {
 
 					allMessages = allMessages.concat(messages);
 				}
-				
+
 				if (allMessages.length > MAX_MESSAGES) {
 					alert(`More than ${MAX_MESSAGES} messages found. Not displaying results.`);
 					return;
