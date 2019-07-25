@@ -155,4 +155,3 @@ document.addEventListener('DOMContentLoaded', event => {
 		template: '#message-template'
 	});
 });
-
