@@ -80,7 +80,7 @@
 							<span>From channel:</span>
 						</label>
 						<select v-model="searchFilterData.channelFilter">
-							<option v-for="channel in server.channels" v-bind:value="channel.id">
+							<option v-for="channel in server.channels.values()" v-bind:value="channel.id">
 								{{channel.name}}
 							</option>
 						</select>
