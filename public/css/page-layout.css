@@ -21,6 +21,7 @@ body {
 
 .flex-col {
 	display:flex;
+	flex: 0 0 auto;
 	flex-direction:column;
 }
 
@@ -38,6 +39,14 @@ body {
 	flex-grow:1;
 }
 
+.flex-shrink {
+	flex-shrink:1;
+}
+
 .messages-container {
 	overflow-y:scroll;
+}
+
+#find-panel {
+	max-width:33.33%;
 }

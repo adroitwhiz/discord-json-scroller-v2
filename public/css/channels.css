@@ -1,6 +1,7 @@
 #channel-list {
 	list-style-type:none;
 	padding:0;
+	flex-grow:1;
 }
 .channel {
 	padding:0.5em 1em;
