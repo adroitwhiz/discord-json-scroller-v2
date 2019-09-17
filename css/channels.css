@@ -1,18 +1,18 @@
 #channel-list {
-	list-style-type:none;
-	padding:0;
-	flex-grow:1;
+	list-style-type: none;
+	padding: 0;
+	flex-grow: 1;
 }
 .channel {
-	padding:0.5em 1em;
-	cursor:pointer;
+	padding: 0.5em 1em;
+	cursor: pointer;
 	transition: background-color 0.25s;
 }
 
 .channel:hover {
-	background-color:#eee;
+	background-color: #eee;
 }
 
 .channel.selected {
-	background-color:#ddd;
+	background-color: #ddd;
 }
