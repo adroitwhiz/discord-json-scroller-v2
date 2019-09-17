@@ -102,7 +102,7 @@ class Message {
 		 * The message author's user/member ID.
 		 * @type {Snowflake}
 		 */
-		this.author = null;
+		this.authorID = null;
 
 		/**
 		 * The message contents.

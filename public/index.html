@@ -11,12 +11,6 @@
 	<link rel="stylesheet" type="text/css" href="css/messages-theme.css">
 	<link rel="stylesheet" type="text/css" href="css/channels.css">
 	<link rel="stylesheet" type="text/css" href="css/find-panel.css">
-	
-	<script src="js/vendor/linkify.js"></script>
-	<script src="js/vendor/linkify-element.js"></script>
-	<script src="js/vendor/moment.js"></script>
-	<script src="js/vendor/vue.js"></script>
-	<script src="js/main.js" type="module"></script>
 </head>
 <body>
 	<div class="flex-expand flex-col" id="app">
@@ -59,41 +53,44 @@
 				</div>
 				
 				<div class="messages-container">
-					<div id="messages">
-						<message v-for="message in messages" v-bind:message="message" v-bind:key="message.id"></message>
-					</div>
+					<Message v-for="message in messages" v-bind:message="message" v-bind:server="server" v-bind:key="message.id"></Message>
 				</div>
 			</div>
 			
 			<div v-bind:class="{'flex-col': true, collapsed: !findPanelVisible}" id="find-panel">
 				<div id="find-controls" class="flex-row">
 					<div>
-						<input type="checkbox" v-model="searchFilterData.filterByText">
-						<span>Contains text:</span>
+						<label>
+							<input type="checkbox" v-model="searchFilterData.filterByText">
+							<span>Contains text:</span>
+						</label>
 						<input type="text" v-model="searchFilterData.textFilter">
 					</div>
 					<div>
-						<input type="checkbox" v-model="searchFilterData.filterByUser">
-						<span>From user (name or ID):</span>
+						
+						<label>
+							<input type="checkbox" v-model="searchFilterData.filterByUser">
+							<span>From user (name or ID):</span>
+						</label>
 						<input type="text" v-model="searchFilterData.userFilter">
 					</div>
 					<div>
+						<label>
 							<input type="checkbox" v-model="searchFilterData.filterByChannel">
 							<span>From channel:</span>
-							<select v-model="searchFilterData.channelFilter">
-								<option v-for="channel in server.channels" v-bind:value="channel.id">
-									{{channel.name}}
-								</option>
-							</select>
-						</div>
+						</label>
+						<select v-model="searchFilterData.channelFilter">
+							<option v-for="channel in server.channels" v-bind:value="channel.id">
+								{{channel.name}}
+							</option>
+						</select>
+					</div>
 					<div>
 						<button v-on:click="searchMessages">Find</button>
 					</div>
 				</div>
 				<div class="messages-container">
-					<div id="found-messages">
-						<message v-for="message in foundMessages" v-bind:message="message" v-bind:key="message.id"></message>
-					</div>
+					<Message v-for="message in foundMessages" v-bind:message="message" v-bind:server="server" v-bind:key="message.id"></Message>
 				</div>
 				<div id="find-toggle" v-on:click="findPanelVisible = !findPanelVisible">🔍</div>
 			</div>
@@ -106,21 +103,5 @@
 			</div>
 		</div>
 	</div>
-
-	<script id="message-template" type="text/x-template">
-		<div class="message">
-			<div class="message-data">
-				<div class="username">{{message.username}}</div>
-				<div class="timestamp">{{message.timestamp}}</div>
-				<div class="index">{{message.id}}</div>
-			</div>
-			<div class="message-content">
-				<div class="message-text" v-linkified>{{message.content}}</div>
-				<div class="message-attachments" v-if="message.attachments">
-					<img :src="attachment.url" class="attachment" v-for="attachment in message.attachments" />
-				</div>
-			</div>
-		</div>
-	</script>
 </body>
 </html>

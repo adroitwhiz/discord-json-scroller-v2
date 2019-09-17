@@ -1,5 +1,6 @@
-import deserializeArchiveBotV1 from './deserialize-archivebotv1.js';
-import deserializeToonMemeBotServer from './deserialize-toonmemebot-server.js';
+import deserializeArchiveBot from './deserialize-archivebot';
+import deserializeToonMemeBotServer from './deserialize-toonmemebot-server';
+import deserializeToonMemeBotChannel from './deserialize-toonmemebot-channel';
 
 // Try to determine archive version.
 // Current known versions:
@@ -36,8 +37,9 @@ const deserializeArchive = json => {
 
 	switch (version) {
 		case 'archivebot-v1':
-		case 'archivebot-v2': {
-			return deserializeArchiveBotV1(json);
+		case 'archivebot-v2':
+		case 'archivebot-v3': {
+			return deserializeArchiveBot(json);
 		}
 		case 'toonmemebot-server-snapshot': {
 			return deserializeToonMemeBotServer(json);

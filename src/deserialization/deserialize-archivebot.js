@@ -1,6 +1,6 @@
-import * as Prims from './primitives.js';
+import * as Prims from './primitives';
 
-const deserializeArchiveBotV1 = json => {
+const deserializeArchiveBot = json => {
 	const server = new Prims.Server();
 
 	server.id = json.id;
@@ -18,6 +18,7 @@ const deserializeArchiveBotV1 = json => {
 		parsedRole.permissions = role.permissions;
 		parsedRole.position = role.position;
 
+		Object.freeze(parsedRole);
 		serverRoles.set(parsedRole.id, parsedRole);
 	}
 
@@ -28,9 +29,16 @@ const deserializeArchiveBotV1 = json => {
 
 		parsedMember.id = member.id;
 		parsedMember.nickname = member.nickname; // explicitly null in serialized format if unset
-		
-		for (const role of member.roles) {
-			parsedMember.roles.push(serverRoles.get(role.id));
+
+		// V3 onwards stores role IDs; earlier versions store roles
+		if (json.version === 'archivebot-v1' || json.version === 'archivebot-v2') {
+			for (const role of member.roles) {
+				parsedMember.roles.push(serverRoles.get(role.id));
+			}
+		} else {
+			for (const roleID of member.roles) {
+				parsedMember.roles.push(serverRoles.get(roleID));
+			}
 		}
 
 		// perhaps store users somewhere else?
@@ -43,6 +51,8 @@ const deserializeArchiveBotV1 = json => {
 
 		parsedMember.user = parsedUser;
 
+		Object.freeze(parsedUser);
+		Object.freeze(parsedMember);
 		serverMembers.set(parsedMember.id, parsedMember);
 	}
 
@@ -55,6 +65,7 @@ const deserializeArchiveBotV1 = json => {
 		parsedEmoji.name = emoji.name;
 		parsedEmoji.url = emoji.url; // explicitly null in serialized format if unset
 
+		Object.freeze(parsedEmoji);
 		serverEmojis.set(parsedEmoji.id, parsedEmoji);
 	}
 
@@ -79,7 +90,7 @@ const deserializeArchiveBotV1 = json => {
 				const parsedMessage = new Prims.Message();
 	
 				parsedMessage.id = message.id;
-				parsedMessage.author = server.members.get(message.author);
+				parsedMessage.authorID = message.author;
 				parsedMessage.content = message.content;
 				parsedMessage.createdTimestamp = message.createdTimestamp;
 				parsedMessage.editedTimestamp = message.editedTimestamp; // explicitly null in serialized format if unset
@@ -98,14 +109,18 @@ const deserializeArchiveBotV1 = json => {
 					}
 				}
 	
+				Object.freeze(parsedMessage);
 				channelMessages.push(parsedMessage);
 			}
+
+			Object.freeze(channelMessages);
 		}
 
+		Object.freeze(parsedChannel);
 		serverChannels.set(parsedChannel.id, parsedChannel);
 	}
 	
 	return server;
 };
 
-export default deserializeArchiveBotV1;
+export default deserializeArchiveBot;

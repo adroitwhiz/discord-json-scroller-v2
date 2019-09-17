@@ -1,4 +1,4 @@
-import * as Prims from './primitives.js';
+import * as Prims from './primitives';
 
 const deserializeToonMemeBotServer = json => {
 	const server = new Prims.Server();
@@ -26,6 +26,8 @@ const deserializeToonMemeBotServer = json => {
 
 		parsedMember.user = parsedUser;
 
+		Object.freeze(parsedUser);
+		Object.freeze(parsedMember);
 		serverMembers.set(parsedMember.id, parsedMember);
 	}
 
@@ -38,6 +40,7 @@ const deserializeToonMemeBotServer = json => {
 		parsedEmoji.name = emoji.name;
 		parsedEmoji.url = emoji.url; // explicitly null in serialized format if unset
 
+		Object.freeze(parsedEmoji);
 		serverEmojis.set(parsedEmoji.id, parsedEmoji);
 	}
 
@@ -61,7 +64,7 @@ const deserializeToonMemeBotServer = json => {
 			const parsedMessage = new Prims.Message();
 
 			parsedMessage.id = message.id;
-			parsedMessage.author = server.members.get(message.author);
+			parsedMessage.authorID = message.author;
 			parsedMessage.content = message.content;
 			parsedMessage.createdTimestamp = message.createdTimestamp;
 			parsedMessage.editedTimestamp = message.editedTimestamp; // explicitly null in serialized format if unset
@@ -80,11 +83,14 @@ const deserializeToonMemeBotServer = json => {
 				}
 			}
 
+			Object.freeze(parsedMessage);
 			channelMessages.push(parsedMessage);
 		}
 
 		channelMessages.reverse();
 
+		Object.freeze(channelMessages);
+		Object.freeze(parsedChannel);
 		serverChannels.set(parsedChannel.id, parsedChannel);
 	}
 

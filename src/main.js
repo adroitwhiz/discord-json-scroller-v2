@@ -1,6 +1,9 @@
-import deserializeArchive from './deserialization/deserialization.js';
+import Vue from 'vue';
+import * as linkifyElement from 'linkifyjs/element';
 
-window.deserializeArchive = deserializeArchive;
+import deserializeArchive from './deserialization/deserialization';
+
+import Message from './components/Message';
 
 const readJSONFromFile = file => {
 	return new Promise((resolve, reject) => {
@@ -45,32 +48,15 @@ document.addEventListener('DOMContentLoaded', event => {
 		},
 		methods: {
 			setChannel (channelId) {
-				// activeChannel = this.server.channels[channelId];
 				this.activeChannelId = channelId;
 			},
-			formatMessages (messages) {
-				return messages.map(message => {
-					return {
-						text:message.content,
-						attachments:message.attachments,
-						username:this.server.members.hasOwnProperty(message.author) ? this.server.members[message.author].username : `<@${message.author}>`,
-						timestamp:moment(parseInt(message.createdTimestamp)).format('MMM D Y h:mm:ss A'),
-						isEdited:message.editedTimestamp !== null,
-						index:message.id
-					}
-				});
-			},
 			displayMessages (messages) {
-				/* const formattedMessages = this.formatMessages(messages);
-				Object.freeze(formattedMessages);
-				this.messages = formattedMessages; */
-
 				this.messages = messages;
 			},
 			renderMessages () {
 				const currentChannel = this.server.channels.get(this.activeChannelId);
 				const messagesToRender = currentChannel.messages.slice(
-					currentChannel.messages.length - parseInt(this.navigationData.renderRangeMax),
+					currentChannel.messages.length - (parseInt(this.navigationData.renderRangeMax) - 1),
 					currentChannel.messages.length - (parseInt(this.navigationData.renderRangeMin) - 1)
 				);
 
@@ -81,7 +67,7 @@ document.addEventListener('DOMContentLoaded', event => {
 
 				let messageIndex;
 				let messageChannel;
-				for (const channel of Object.values(this.server.channels)) {
+				for (const [id, channel] of this.server.channels) {
 					messageIndex = channel.messages.findIndex(message => message.id === jumpID);
 					if (messageIndex !== -1) {
 						messageChannel = channel;
@@ -100,8 +86,8 @@ document.addEventListener('DOMContentLoaded', event => {
 			searchMessages () {
 				const MAX_MESSAGES = 10000;
 				let allMessages = [];
-				for (const channel of Object.values(this.server.channels)) {
-					if (this.searchFilterData.filterByChannel && this.searchFilterData.channelFilter !== channel.id) continue;
+				for (const [id, channel] of this.server.channels) {
+					if (channel.type !== 'text' || (this.searchFilterData.filterByChannel && this.searchFilterData.channelFilter !== channel.id)) continue;
 					let messages = channel.messages;
 
 					if (this.searchFilterData.filterByText) {
@@ -121,7 +107,7 @@ document.addEventListener('DOMContentLoaded', event => {
 					return;
 				}
 
-				this.foundMessages = this.formatMessages(allMessages).sort((a, b) => a.timestamp - b.timestamp);
+				this.foundMessages = allMessages.sort((a, b) => a.createdTimestamp - b.createdTimestamp);
 			},
 			loadJSONFromFile (event) {
 				const jsonFile = event.target.files[0];
@@ -132,23 +118,12 @@ document.addEventListener('DOMContentLoaded', event => {
 			loadServer (serializedServer) {
 				const deserialized = deserializeArchive(serializedServer);
 
-				for (const channel of serializedServer.channels) {
-					// Messages are read-only. Freezing them stops Vue from trying to "observe" every single message in every single channel.
-					Object.freeze(channel.messages);
-				}
-
-				console.log(deserialized);
+				//console.log(deserialized);
 
 				this.server = deserialized;
 			}
-		}
-	});
-
-	Vue.component('message', {
-		props: ['message'],
-		data: () => {
-			return {}
 		},
-		template: '#message-template'
+
+		components: {Message}
 	});
 });
