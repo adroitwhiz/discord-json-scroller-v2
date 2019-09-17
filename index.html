@@ -16,7 +16,7 @@
 	<script src="js/vendor/linkify-element.js"></script>
 	<script src="js/vendor/moment.js"></script>
 	<script src="js/vendor/vue.js"></script>
-	<script src="js/main.js"></script>
+	<script src="js/main.js" type="module"></script>
 </head>
 <body>
 	<div class="flex-expand flex-col" id="app">
@@ -29,7 +29,7 @@
 					<li
 						v-bind:class="{channel: true, selected: activeChannelId === channel.id}"
 						v-on:click="setChannel(channel.id)"
-						v-for="channel in server.channels"
+						v-for="channel in server.channels.values()"
 					>
 						<span class="channel-name">{{channel.name}}</span>
 					</li>
@@ -60,7 +60,7 @@
 				
 				<div class="messages-container">
 					<div id="messages">
-						<message v-for="message in messages" v-bind:message="message" v-bind:key="message.index"></message>
+						<message v-for="message in messages" v-bind:message="message" v-bind:key="message.id"></message>
 					</div>
 				</div>
 			</div>
@@ -92,7 +92,7 @@
 				</div>
 				<div class="messages-container">
 					<div id="found-messages">
-						<message v-for="message in foundMessages" v-bind:message="message" v-bind:key="message.index"></message>
+						<message v-for="message in foundMessages" v-bind:message="message" v-bind:key="message.id"></message>
 					</div>
 				</div>
 				<div id="find-toggle" v-on:click="findPanelVisible = !findPanelVisible">🔍</div>
@@ -112,10 +112,10 @@
 			<div class="message-data">
 				<div class="username">{{message.username}}</div>
 				<div class="timestamp">{{message.timestamp}}</div>
-				<div class="index">{{message.index}}</div>
+				<div class="index">{{message.id}}</div>
 			</div>
 			<div class="message-content">
-				<div class="message-text" v-linkified>{{message.text}}</div>
+				<div class="message-text" v-linkified>{{message.content}}</div>
 				<div class="message-attachments" v-if="message.attachments">
 					<img :src="attachment.url" class="attachment" v-for="attachment in message.attachments" />
 				</div>

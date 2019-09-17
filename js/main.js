@@ -1,3 +1,7 @@
+import deserializeArchive from './deserialization/deserialization.js';
+
+window.deserializeArchive = deserializeArchive;
+
 const readJSONFromFile = file => {
 	return new Promise((resolve, reject) => {
 		const reader = new FileReader();
@@ -41,11 +45,11 @@ document.addEventListener('DOMContentLoaded', event => {
 		},
 		methods: {
 			setChannel (channelId) {
-				activeChannel = this.server.channels[channelId];
+				// activeChannel = this.server.channels[channelId];
 				this.activeChannelId = channelId;
 			},
 			formatMessages (messages) {
-				return messages.reverse().map(message => {
+				return messages.map(message => {
 					return {
 						text:message.content,
 						attachments:message.attachments,
@@ -57,15 +61,17 @@ document.addEventListener('DOMContentLoaded', event => {
 				});
 			},
 			displayMessages (messages) {
-				formattedMessages = this.formatMessages(messages);
+				/* const formattedMessages = this.formatMessages(messages);
 				Object.freeze(formattedMessages);
-				this.messages = formattedMessages;
+				this.messages = formattedMessages; */
+
+				this.messages = messages;
 			},
 			renderMessages () {
-				const currentChannel = this.server.channels[this.activeChannelId];
+				const currentChannel = this.server.channels.get(this.activeChannelId);
 				const messagesToRender = currentChannel.messages.slice(
-					parseInt(this.navigationData.renderRangeMin),
-					parseInt(this.navigationData.renderRangeMax + 1)
+					currentChannel.messages.length - parseInt(this.navigationData.renderRangeMax),
+					currentChannel.messages.length - (parseInt(this.navigationData.renderRangeMin) - 1)
 				);
 
 				this.displayMessages(messagesToRender);
@@ -124,24 +130,16 @@ document.addEventListener('DOMContentLoaded', event => {
 				}
 			},
 			loadServer (serializedServer) {
-				const channels = {};
+				const deserialized = deserializeArchive(serializedServer);
+
 				for (const channel of serializedServer.channels) {
 					// Messages are read-only. Freezing them stops Vue from trying to "observe" every single message in every single channel.
 					Object.freeze(channel.messages);
-					channels[channel.id] = channel;
 				}
 
-				const members = {};
-				for (const member of serializedServer.members) {
-					members[member.user.id] = member.user;
-				}
+				console.log(deserialized);
 
-				const server = {
-					channels: channels,
-					members: members
-				};
-
-				this.server = server;
+				this.server = deserialized;
 			}
 		}
 	});
