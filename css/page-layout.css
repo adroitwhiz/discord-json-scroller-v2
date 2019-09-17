@@ -37,6 +37,7 @@ body {
 
 .flex-expand {
 	flex-grow: 1;
+	min-width: 0;
 }
 
 .flex-shrink {
@@ -44,6 +45,7 @@ body {
 }
 
 .messages-container {
+	overflow-x: hidden;
 	overflow-y: scroll;
 }
 

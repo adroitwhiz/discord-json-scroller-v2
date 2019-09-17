@@ -1,4 +1,4 @@
-#messages {
+.messages-container {
 	overflow-wrap: anywhere;
 }
 .message {
@@ -13,7 +13,7 @@
 }
 
 .message-text {
-	/* white-space: pre-line; */
+	white-space: pre-line;
 }
 
 .username, .timestamp {
