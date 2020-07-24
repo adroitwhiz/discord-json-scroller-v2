@@ -17,4 +17,6 @@ img.attachment {
 	max-width: 700px;
 	max-height: 400px;
 	image-orientation: from-image;
+	width: auto;
+	height: auto;
 }
