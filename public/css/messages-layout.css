@@ -16,6 +16,6 @@
 	white-space: pre-line;
 }
 
-.username, .timestamp {
+.username, .timestamp, .user-id {
 	margin-right: 0.5em;
 }

@@ -4,6 +4,9 @@
 			<div class="username">
 				{{ getUsername() }}
 			</div>
+			<div class="user-id">
+				{{ formatID(message.authorID) }}
+			</div>
 			<div class="timestamp">
 				{{ formatTimestamp(message.createdTimestamp) }}
 			</div>
@@ -66,7 +69,9 @@ export default {
 
 		formatTimestamp: timestamp => {
 			return moment(parseInt(timestamp)).format('MMM D Y h:mm:ss A');
-		}
+		},
+
+		formatID: id => `<@${id}>`
 	}
 };
 </script>
