@@ -19,6 +19,11 @@
 	opacity: 0.75;
 }
 
+.user-id {
+	font-size: 0.75em;
+	opacity: 0.5;
+}
+
 .timestamp {
 	font-size: 0.75em;
 	opacity: 0.666666667;
