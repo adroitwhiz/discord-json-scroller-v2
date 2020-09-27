@@ -3,6 +3,9 @@
 		id="app"
 		class="flex-expand flex-col"
 	>
+		<div class="deprecation-notice">
+			This tool is no longer being maintained! Try using <a href="https://adroitwhiz.github.io/discord-json-scroller-v3/">the updated version</a> instead.
+		</div>
 		<div class="flex-cols flex-expand">
 			<channel-list-panel />
 			<channel-messages-panel />
