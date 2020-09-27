@@ -41,3 +41,8 @@ body {
 	border-bottom: var(--border-style);
 	border-left: var(--border-style);
 }
+
+.deprecation-notice {
+	padding: 0.5em;
+	background-color: rgb(255, 197, 8);
+}
